@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api';
@@ -21,84 +22,57 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-export const getAlumniData = async (id) => {
-  try {
-    const response = await api.get(`/alumni/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching alumni data:', error);
-    return null;
-  }
+const AlumniList = ({ alumni }) => {
+  // ... your component logic for displaying alumni data
 };
 
-export const getDonationStats = async () => {
-  try {
-    const response = await api.get('/donations/stats');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching donation stats:', error);
-    return null;
-  }
+const DonationStats = ({ stats }) => {
+  // ... your component logic for displaying donation statistics
 };
 
-export const makeDonation = async (userId, amount) => {
-  try {
-    const response = await api.post('/donations', { userId, amount });
-    return response.data;
-  } catch (error) {
-    console.error('Error making donation:', error);
-    return { success: false };
-  }
+const ErrorDisplay = ({ error }) => {
+  // ... your component logic for displaying error messages
 };
 
-export const getAlumniProfile = async (id) => {
-  try {
-    const response = await api.get(`/alumni/${id}/profile`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching alumni profile:', error);
-    return null;
-  }
-};
+function App() {
+  const [alumniData, setAlumniData] = useState(null);
+  const [donationStats, setDonationStats] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-export const updateAlumniProfile = async (id, profileData) => {
-  try {
-    const response = await api.put(`/alumni/${id}/profile`, profileData);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating alumni profile:', error);
-    return { success: false };
-  }
-};
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const alumniResponse = await api.get('/alumni');
+        setAlumniData(alumniResponse.data);
 
-export const getAllAlumni = async () => {
-  try {
-    const response = await api.get('/alumni');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching all alumni:', error);
-    return [];
-  }
-};
+        const statsResponse = await api.get('/donations/stats');
+        setDonationStats(statsResponse.data);
+      } catch (error) {
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-export const updateAlumni = async (id, alumniData) => {
-  try {
-    const response = await api.put(`/alumni/${id}`, alumniData);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating alumni:', error);
-    return { success: false };
-  }
-};
+    fetchData();
+  }, []);
 
-export const deleteAlumni = async (id) => {
-  try {
-    const response = await api.delete(`/alumni/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error deleting alumni:', error);
-    return { success: false };
-  }
-};
+  return (
+    <div className="App">
+      {isLoading ? (
+        <p>Loading data...</p>
+      ) : error ? (
+        <ErrorDisplay error={error} />
+      ) : (
+        <>
+          {alumniData && <AlumniList alumni={alumniData} />}
+          {donationStats && <DonationStats stats={donationStats} />}
+        </>
+      )}
+    </div>
+  );
+}
 
-export default api;
+export default App;
